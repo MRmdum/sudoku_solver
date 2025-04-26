@@ -8,15 +8,25 @@ pub struct GlobalBoard {
 
 impl GlobalBoard {
     /// Create a new GlobalBoard with given size, all elements initialized to empty Vec<u8>
-    pub fn new(size: usize) -> Self {
+    pub fn new(input: Vec<Vec<u8>>) -> Self {
         // Initialize a 10x10 board with empty Vec<u8>
         let mut data: [[Vec<u8>; 10]; 10] = Default::default();
-        for row in &mut data {
-            for cell in row {
-                *cell = (1..=9).collect(); // Explicitly initialize each Vec<u8>
+
+        for (x, row) in data.iter_mut().enumerate() {
+            for (y, cell) in row.iter_mut().enumerate() {
+                if let Some(input_row) = input.get(x) {
+                    if let Some(&val) = input_row.get(y) {
+                        *cell = vec![val]; // Use the provided value
+                    } else {
+                        *cell = (1..=9).collect(); // Out of bounds in y -> fill with 1..9
+                    }
+                } else {
+                    *cell = (1..=9).collect(); // Out of bounds in x -> fill with 1..9
+                }
             }
-        } // This initializes all Vec<u8> to empty.
-        Self { data, size }
+        }
+
+        Self { data, size:10 }
     }
 
     /// Get the size of the board (it's 10x10 in this case)
@@ -81,7 +91,7 @@ impl<'a> Iterator for GlobalBoardIterator<'a> {
 
 impl fmt::Display for GlobalBoard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "--------------------------------")?;
+        writeln!(f, "---------------------------------")?;
         for x in 0..self.size-1 {
             write!(f, "|")?;
             for y in 0..self.size-1 {
